@@ -1,0 +1,45 @@
+{
+  "description": "Client support for Privacy Pass anonymous authorization protocol.",
+  "manifest_version": 2,
+  "name": "Privacy Pass",
+  "version": "2.0.9",
+  "icons": {
+    "32": "icons/ticket-32.png",
+    "48": "icons/ticket-48.png",
+    "64": "icons/ticket-64.png",
+    "128": "icons/ticket-128.png"
+  },
+  "background": {
+    "scripts": [
+      "background/lib/asn1-parser.js",
+      "background/lib/sjcl.js",
+
+      "background/src/crypto/keccak/keccak.js",
+      "background/src/crypto/local.js",
+
+      "background/src/ext/config.js",
+      "background/src/ext/background.js",
+      "background/src/ext/browserUtils.js",
+      "background/src/ext/h2c.js",
+      "background/src/ext/issuance.js",
+      "background/src/ext/redemption.js",
+      "background/src/ext/tokens.js",
+      "background/src/ext/utils.js",
+      "background/src/ext/init.js",
+      "background/src/ext/listeners.js"
+    ],
+    "persistent": true
+  },
+  "permissions": [
+    "cookies",
+    "<all_urls>",
+    "webRequest",
+    "webRequestBlocking",
+    "webNavigation"
+  ],
+  "browser_action": {
+    "default_icon": "icons/ticket-empty-32.png",
+    "default_title": "Privacy Pass",
+    "default_popup": "popup/bc-plugin.html"
+  }
+}
