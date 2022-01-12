@@ -32,7 +32,10 @@ function extVersionAsArray() {
 const CHL_BYPASS_SUPPORT = "cf-chl-bypass"; // header from server to indicate that Privacy Pass is supported
 const CHL_BYPASS_RESPONSE = "cf-chl-bypass-resp"; // response header from server, e.g. with erorr code
 const validRedemptionMethods = () => ["reload", "no-reload"]; // specifies valid token redemption methods
-const CONFIGURATION_URL = "https://raw.githubusercontent.com/privacypass/ec-commitments/master/commitments-p256.json";
+const CONFIGURATION_URL = [
+  "https://raw.githubusercontent.com/privacypass/ec-commitments/master/commitments-p256.json",
+  "https://cdn.jsdelivr.net/gh/privacypass/ec-commitments/commitments-p256.json"
+];
 
 // initialise configurations from base settings, and potentially modify
 // with patches later
@@ -287,9 +290,7 @@ function processConfigPatches(cfgId) {
             VALID_CONFIGS[cfgId] = config;
         });
     };
-    const xhr = retrieveConfiguration(cfgId, callback);
-    xhr.send();
-    return xhr;
+    retrieveConfiguration(cfgId, callback);
 }
 
 /**
@@ -300,22 +301,34 @@ function processConfigPatches(cfgId) {
  * retrieved
  * @return {XMLHttpRequest}
  */
-function retrieveConfiguration(cfgId, callback) {
+function retrieveConfiguration(cfgId, callback, retry_counter=0) {
     if (!callback) {
         throw new Error("[privacy-pass]: Invalid configuration retrieval callback specified");
     }
+    if ((typeof retry_counter !== 'number') || (retry_counter < 0) || (retry_counter >= CONFIGURATION_URL.length)) {
+        throw new Error("[privacy-pass]: Invalid configuration retrieval retry_counter index specified");
+    }
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", CONFIGURATION_URL, true);
+    xhr.open("GET", CONFIGURATION_URL[retry_counter], true);
     xhr.setRequestHeader("Accept", "application/json");
     xhr.onreadystatechange = function() {
-        if (xhrGoodStatus(xhr.status) && xhrDone(xhr.readyState)) {
-            const provider = getConfigName(cfgId);
-            const resp = JSON.parse(xhr.responseText);
-            const config = resp[provider];
-            callback(config);
+        if (xhrDone(xhr.readyState)) {
+          if (xhrGoodStatus(xhr.status)) {
+              const provider = getConfigName(cfgId);
+              const resp = JSON.parse(xhr.responseText);
+              const config = resp[provider];
+              callback(config);
+          }
+          else {
+              const max_retries = CONFIGURATION_URL.length - 1;
+
+              if (retry_counter < max_retries) {
+                  retrieveConfiguration(cfgId, callback, retry_counter + 1);
+              }
+          }
         }
     };
-    return xhr;
+    xhr.send();
 }
 
 /**
