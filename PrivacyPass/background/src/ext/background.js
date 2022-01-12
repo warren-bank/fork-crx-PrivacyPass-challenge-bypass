@@ -358,6 +358,12 @@ function tryRequestChallenge(details, url) {
  * @return {boolean}
  */
 function decideRedeem(details, url, cfgId) {
+    if ((url.host.toLowerCase() === 'hcaptcha.com') && (/[\?&]host=(?:[^\.]+\.)*?(?:hcaptcha\.com|captcha\.website)(?:[&]|$)/i).test(url.search)) {
+        setSpendFlag(url.host, null);
+        setReadyIssue(cfgId, true);
+        return false;
+    }
+
     let attempted = false;
     if (!spentUrl[url.href]) {
         const count = countStoredTokens(getConfigId());

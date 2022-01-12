@@ -22,6 +22,18 @@ Privacy Pass is currently supported by Cloudflare to allow users to redeem valid
     * actually, a few build scripts are included to produce the same crx using alternate methods
   - the repo is now a direct 1-to-1 with the contents that are included in the packed crx, which makes development much simpler
   - the code for the extension is identical to the upstream release for [v2.0.9](https://github.com/privacypass/challenge-bypass-extension/releases/tag/v2.0.9)
+* v2.1.0
+  - add logic to restrict token redemption on URLs
+    * hosted by:
+      - [captcha.website](https://captcha.website/)
+      - [hcaptcha.com](https://www.hcaptcha.com/privacy-pass)
+    * the purpose of which is to allow the user to earn tokens on these sites by repeatedly solving captchas
+  - add logic to retry the HTTP request to claim _hCaptcha_ tokens earned when the server responds with the error:<br>`{"success":false,"error-codes":["invalid-data"]}`
+    * this error occurs when the user is attempting to earn _hCaptcha_ tokens using an _incognito_ Chrome browser window
+    * sometimes the request will succeed, but most of the time it doesn't
+    * the only real workaround at the moment is to always earn _hCaptcha_ tokens using a _normal_ Chrome browser window
+      - once earned, these tokens can be redeemed using either a _normal_ or an _incognito_ Chrome browser window
+    * this code will retry each failed HTTP request a maximum of 5x times
 
 - - - -
 

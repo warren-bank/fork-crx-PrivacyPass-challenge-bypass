@@ -133,22 +133,44 @@ function signReqHC(url, details) {
  * @param {URL} url URL object
  * @param {Number} cfgId config ID initiating issue request
  * @param {Number} tabId Tab ID for the current request
+ * @param {Number} retry_counter to track when to retry or timeout
  * @return {XMLHttpRequest}
  */
-function sendXhrSignReq(xhrInfo, url, cfgId, tabId) {
+function sendXhrSignReq(xhrInfo, url, cfgId, tabId, retry_counter=0) {
     const newUrl = xhrInfo["newUrl"];
     const requestBody = xhrInfo["requestBody"];
     const tokens = xhrInfo["tokens"];
     const xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         // When we receive a response...
-        const boundReached = countStoredTokens(cfgId) >= (maxTokens(cfgId) - tokensPerRequest(cfgId));
-        if (xhrGoodStatus(xhr.status) && xhrDone(xhr.readyState) && !boundReached) {
+        if (xhrDone(xhr.readyState)) {
             const respData = xhr.responseText;
-            // Validates the response and stores the signed points for redemptions
-            validateResponse(url, cfgId, tabId, respData, tokens);
-        } else if (boundReached) {
-            throw new Error("[privacy-pass]: Cannot receive new tokens due to upper bound.");
+            if (xhrGoodStatus(xhr.status)) {
+                const boundReached = countStoredTokens(cfgId) >= (maxTokens(cfgId) - tokensPerRequest(cfgId));
+                if (!boundReached) {
+                    // Validates the response and stores the signed points for redemptions
+                    validateResponse(url, cfgId, tabId, respData, tokens);
+                } else {
+                    throw new Error("[privacy-pass]: Cannot receive new tokens due to upper bound.");
+                }
+            }
+            else if (signResponseFMT(cfgId) === 'json') {
+                const max_retries = 5;
+
+                try {
+                    const json = JSON.parse(respData);
+
+                    if (
+                        (retry_counter < max_retries)
+                     && json && (json instanceof Object)
+                     && (json['success'] === false)
+                     && Array.isArray(json['error-codes']) && (json['error-codes'].indexOf('invalid-data') >= 0)
+                    ) {
+                        sendXhrSignReq(xhrInfo, url, cfgId, tabId, retry_counter + 1);
+                    }
+                }
+                catch (error) {}
+            }
         }
     };
     xhr.open("POST", newUrl, true);
