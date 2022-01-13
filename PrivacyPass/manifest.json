@@ -2,7 +2,7 @@
   "description": "Client support for Privacy Pass anonymous authorization protocol.",
   "manifest_version": 2,
   "name": "Privacy Pass",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "icons": {
     "32": "icons/ticket-32.png",
     "48": "icons/ticket-48.png",
@@ -38,8 +38,13 @@
     "webNavigation"
   ],
   "browser_action": {
-    "default_icon": "icons/ticket-empty-32.png",
+    "default_icon":  "icons/ticket-empty-32.png",
     "default_title": "Privacy Pass",
     "default_popup": "popup/bc-plugin.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "challenge-bypass-extension@privacypass.github.io"
+    }
   }
 }
