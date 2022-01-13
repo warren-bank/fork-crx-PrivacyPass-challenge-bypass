@@ -1,4 +1,4 @@
-### [Privacy Pass protocol: Challenge Bypass Extension](https://github.com/warren-bank/fork-crx-PrivacyPass-challenge-bypass)
+### [Privacy Pass protocol: Challenge Bypass Extension](https://github.com/warren-bank/fork-crx-PrivacyPass-challenge-bypass/tree/v2-javascript)
 
 The Privacy Pass browser extension implements the Privacy Pass protocol for providing a private authentication mechanism during web browsing.
 Privacy Pass is currently supported by Cloudflare to allow users to redeem validly signed tokens instead of completing CAPTCHA solutions.
